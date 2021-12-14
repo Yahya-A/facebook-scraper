@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 class FacebookScraper:
     """Class for creating FacebookScraper Iterators"""
 
-    base_url = FB_MOBILE_BASE_URL
+    base_url = FB_W3_BASE_URL
     default_headers = {
         'Accept-Language': 'en-US,en;q=0.5',
         "Sec-Fetch-User": "?1",
