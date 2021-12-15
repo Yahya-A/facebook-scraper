@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 class FacebookScraper:
     """Class for creating FacebookScraper Iterators"""
 
-    base_url = FB_W3_BASE_URL
+    base_url = FB_MBASIC_BASE_URL
     default_headers = {
         'Accept-Language': 'en-US,en;q=0.5',
         "Sec-Fetch-User": "?1",
@@ -80,19 +80,19 @@ class FacebookScraper:
         for post_url in post_urls:
             url = str(post_url)
             if url.startswith(FB_BASE_URL):
-                url = url.replace(FB_BASE_URL, FB_W3_BASE_URL)
+                url = url.replace(FB_BASE_URL, FB_MOBILE_BASE_URL)
             if url.startswith(FB_W3_BASE_URL):
-                url = url.replace(FB_MOBILE_BASE_URL, FB_W3_BASE_URL)
-            if not url.startswith(FB_W3_BASE_URL):
-                url = utils.urljoin(FB_W3_BASE_URL, url)
+                url = url.replace(FB_W3_BASE_URL, FB_MOBILE_BASE_URL)
+            if not url.startswith(FB_MOBILE_BASE_URL):
+                url = utils.urljoin(FB_MOBILE_BASE_URL, url)
             post = {"original_request_url": post_url, "post_url": url}
             logger.debug(f"Requesting page from: {url}")
             response = self.get(url)
-            if response.url == "https://www.facebook.com/watch/?ref=watch_permalink":
+            if response.url == "https://m.facebook.com/watch/?ref=watch_permalink":
                 post_url = re.search("\d+", str(post_url)).group()
                 if post_url:
                     url = utils.urljoin(
-                        FB_W3_BASE_URL,
+                        FB_MOBILE_BASE_URL,
                         f"story.php?story_fbid={post_url}&id=1&m_entstream_source=timeline",
                     )
                     post = {"original_request_url": post_url, "post_url": url}
@@ -130,7 +130,7 @@ class FacebookScraper:
                             full_post_html=response.html,
                         )
                     )
-                elif url.startswith(utils.urljoin(FB_W3_BASE_URL, "/groups/")):
+                elif url.startswith(utils.urljoin(FB_MOBILE_BASE_URL, "/groups/")):
                     post.update(
                         extract_group_post(
                             elem,
@@ -161,7 +161,7 @@ class FacebookScraper:
             limit = friend_opt
         friend_url = kwargs.pop("start_url", None)
         if not friend_url:
-            friend_url = utils.urljoin(FB_W3_BASE_URL, f'/{account}/friends/')
+            friend_url = utils.urljoin(FB_MOBILE_BASE_URL, f'/{account}/friends/')
         request_url_callback = kwargs.get('request_url_callback')
         friends_found = 0
         while friend_url:
@@ -204,7 +204,7 @@ class FacebookScraper:
                 return
             more = re.search(r'm_more_friends",href:"([^"]+)"', response.text)
             if more:
-                friend_url = utils.urljoin(FB_W3_BASE_URL, more.group(1))
+                friend_url = utils.urljoin(FB_MOBILE_BASE_URL, more.group(1))
                 if request_url_callback:
                     request_url_callback(friend_url)
             else:
@@ -343,7 +343,7 @@ class FacebookScraper:
                 if profpic:
                     result["profile_picture"] = profpic.attrs["src"]
 
-        about_url = utils.urljoin(FB_W3_BASE_URL, f'/{account}/about/')
+        about_url = utils.urljoin(FB_MOBILE_BASE_URL, f'/{account}/about/')
         logger.debug(f"Requesting page from: {about_url}")
         response = self.get(about_url)
         match = re.search(r'entity_id:(\d+),', response.html.html)
@@ -618,7 +618,7 @@ class FacebookScraper:
     def get(self, url, **kwargs):
         try:
             if not url.startswith("http"):
-                url = utils.urljoin(FB_W3_BASE_URL, url)
+                url = utils.urljoin(FB_MOBILE_BASE_URL, url)
             response = self.session.get(url=url, **self.requests_kwargs, **kwargs)
             response.html.html = response.html.html.replace('<!--', '').replace('-->', '')
             response.raise_for_status()
@@ -626,7 +626,7 @@ class FacebookScraper:
             if "cookie/consent-page" in response.url:
                 response = self.submit_form(response)
             if (
-                response.url.startswith(FB_W3_BASE_URL)
+                response.url.startswith(FB_MOBILE_BASE_URL)
                 and not response.html.find("script", first=True)
                 and "script" not in response.html.html
                 and self.session.cookies.get("noscript") != "1"
