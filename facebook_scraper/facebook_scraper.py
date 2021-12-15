@@ -80,15 +80,15 @@ class FacebookScraper:
         for post_url in post_urls:
             url = str(post_url)
             if url.startswith(FB_BASE_URL):
-                url = url.replace(FB_BASE_URL, FB_MOBILE_BASE_URL)
+                url = url.replace(FB_BASE_URL, FB_W3_BASE_URL)
             if url.startswith(FB_W3_BASE_URL):
-                url = url.replace(FB_W3_BASE_URL, FB_MOBILE_BASE_URL)
-            if not url.startswith(FB_MOBILE_BASE_URL):
-                url = utils.urljoin(FB_MOBILE_BASE_URL, url)
+                url = url.replace(FB_MOBILE_BASE_URL, FB_W3_BASE_URL)
+            if not url.startswith(FB_W3_BASE_URL):
+                url = utils.urljoin(FB_W3_BASE_URL, url)
             post = {"original_request_url": post_url, "post_url": url}
             logger.debug(f"Requesting page from: {url}")
             response = self.get(url)
-            if response.url == "https://m.facebook.com/watch/?ref=watch_permalink":
+            if response.url == "https://www.facebook.com/watch/?ref=watch_permalink":
                 post_url = re.search("\d+", str(post_url)).group()
                 if post_url:
                     url = utils.urljoin(
